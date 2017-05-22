@@ -27,16 +27,16 @@ class TestCase extends BaseTestCase
 	{
 	    // Setup default database to use sqlite :memory:
 	    $app['config']->set('database.default', 'test');
-	    /*$app['config']->set('database.connections.test', [
+	    $app['config']->set('database.connections.test', [
 	        'driver'   => 'sqlite',
 	        'database' => ':memory:',
-	    ]);*/
-	    $app['config']->set('database.connections.test', [
+	    ]);
+	    /*$app['config']->set('database.connections.test', [
 	        'driver'   => 'mysql',
 	        'host'	   => 'localhost',
 	        'username' => 'root',
-	        'database' => 'packages',
-	    ]);
+	        'database' => 'laranotes',
+	    ]);*/
 	}
 
 	/**
@@ -57,7 +57,8 @@ class TestCase extends BaseTestCase
      */
     protected function createPostTable()
     {
-    	$this->app['db']->connection()->getSchemaBuilder()->drop('posts');
+    	if($this->app['db']->connection()->getSchemaBuilder()->hasTable('posts'))
+    		$this->app['db']->connection()->getSchemaBuilder()->drop('posts');
 
         $this->app['db']->connection()->getSchemaBuilder()->create('posts', function (Blueprint $table) {
             $table->increments('id');

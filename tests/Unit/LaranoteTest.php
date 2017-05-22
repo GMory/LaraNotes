@@ -65,7 +65,7 @@ class LaranoteTest extends TestCase
     }
     protected function seedModels()
     {
-        User::create(['name' => 'John Doe', 'email' => 'johndoe@test.com']);
+        User::create(['name' => 'John Doe', 'email' => 'johndoe@test.com', 'password' => 'qwerty']);
         Post::create(['title' => 'Test Post']);
     }
 }
