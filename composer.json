@@ -1,0 +1,30 @@
+{
+    "name": "gmory/laranotes",
+    "description": "A package to attach notes to your models.",
+    "keywords": ["laravel", "notes"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "gmory",
+            "email": "alex@gomory.me"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Gmory\\Laranotes\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Gmory\\Laranotes\\Test\\": "tests/"
+        }
+    },
+    "require": {
+        "illuminate/support": "~5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "orchestra/testbench": "^3.4",
+        "orchestra/database": "^3.4"
+    }
+}
