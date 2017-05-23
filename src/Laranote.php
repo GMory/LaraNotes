@@ -34,9 +34,8 @@ class Laranote
     }
 
     /**
-     * Delete all past notes associated with .
+     * Delete all past notes associated with the attached model.
      *
-     * @param boolean
      */
     public function deleteOld()
     {
