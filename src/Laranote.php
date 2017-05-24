@@ -107,24 +107,20 @@ class Laranote
     {
         $note = $this->note;
 
-        $existingNotes = Note::with('regarding')->whereHas('noting', function ($q) use ($note) {
-            $q->where('id', $note->noting->id);
-        })->where('content', $note->content)->get();
+        // Word around since whereHas currently don't work for polyMorphics (https://github.com/laravel/framework/issues/5429)
+        $existingNotes = Note::where('content', $note->content)->get()->filter(function ($value, $key) use ($note) {
 
-        if($existingNotes->count() == 0) {
-            return false;
-        }
-
-        if(!$note->regarding) {
-            return true;
-        }
-
-        foreach($existingNotes as $existingNote) {
-            if($existingNote->regarding && ($existingNote->regarding->id == $note->regarding->id)) {
-                return true;
+            if ($value->noting->id != $note->noting->id) {
+                return false;
             }
-        }
+
+            if ($note->regarding && (!$value->regarding || ($value->regarding->id != $note->regarding->id))) {
+                return false;
+            }
+
+            return true;
+        });
         
-        return false;
+        return ($existingNotes->count() > 0);
     }
 }
