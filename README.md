@@ -1,5 +1,6 @@
 # LaraNotes
-[![Build Status](https://travis-ci.org/GMory/laranotes.svg?branch=master)](https://travis-ci.org/GMory/laranotes)
+[![Travis](https://img.shields.io/travis/GMory/laranotes.svg?style=flat-square)](https://travis-ci.org/GMory/laranotes)
+[![Codecov](https://img.shields.io/codecov/c/github/GMory/laranotes/1.1.0.svg?style=flat-square)](https://codecov.io/gh/GMory/laranotes/branch/1.1.0)
 
 A package for laravel that allows you to attach notes to any model of your choosing. This is particularly helpful when you want to add a snippet of information to any of your models.
 
