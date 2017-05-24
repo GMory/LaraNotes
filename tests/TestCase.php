@@ -31,12 +31,6 @@ class TestCase extends BaseTestCase
 	        'driver'   => 'sqlite',
 	        'database' => ':memory:',
 	    ]);
-	    /*$app['config']->set('database.connections.test', [
-	        'driver'   => 'mysql',
-	        'host'	   => 'localhost',
-	        'username' => 'root',
-	        'database' => 'laranotes',
-	    ]);*/
 	}
 
 	/**

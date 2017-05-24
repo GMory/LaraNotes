@@ -6,7 +6,7 @@ A package for laravel that allows you to attach notes to any model of your choos
 ## Use Cases
 
 Some use cases include: 
-- Noting models with read-able messages related to exceptions.
+- Noting models with readable messages related to exceptions.
 - Noting user log-on/off times.
 - Noting an article with the last user to edit it.
 
@@ -19,7 +19,7 @@ Use Composer to install the package.
 composer require gmory/laranotes
 ```
 
-2. Once that's complete, you must add the service provider to your `config/app.php` file:
+2. Add the service provider to your `config/app.php` file:
 ```
 'providers' => [
     ...
@@ -27,34 +27,62 @@ composer require gmory/laranotes
 ];
 ```
 
-3. While not required, you are also free to add the Facade to your `config/app.php` file:
+3. Add the Facade to your `config/app.php` file:
 ```
 'Laranote' => Gmory\Laranotes\LaranotesFacade::class,
 ```
 
 ## Usage
 
-1. First place the `NotesTrait` on each of the models you wish to attach notes to. This will give those models the appropriate relationships to access their notes.
+### Setup Relationships with NotesTrait
+First place the `NotesTrait` on each of the models you wish to attach notes to. This will give those models the appropriate relationships to access their notes.
 
-2. Either use the Facade mentioned above or inject Laranote into the class of your choice as a dependency.
-
-3. To add a note, specify what model you want the note attached to by using `attach($model)`, followed by the `note($content)` method:
+### Adding Notes
+To add a note, specify what model you want the note attached to by using `attach($model)`, followed by the `note($content, [$unique])` method:
 ```
-$user = User::first();
 Laranote::attach($user)->note('This user is great!');
 ```
 
-4. Optionally, you may make a note regard a secondary model with `regarding($model)`. This is useful when you want a note attached to a particular model, but you want to know what the note is referencing.
+You can specify to only add the note if it's unique (ensuring that you don't add a duplicate identical note) by passing true as the second argument in the `note()` method.
 ```
-$user = User::first();
-$post = Post::first();
+Laranote::attach($user)->note('If this note already exists, do not attach it again.', true);
+```
+
+You can make a note regard a secondary model with `regarding($model)`. This is useful when you want a note attached to a particular model, but you want to know what the note is referencing.
+```
 Laranote::attach($user)->regarding($post)->note($user->name . ' edited this post.');
 ```
 
-5. Optionally, you may delete all old notes associated with a model when creating a new note with `deleteOld()`.
+You can delete all old notes associated with a model when creating a new note with `deleteOld()`.
 ```
-$user = User::first();
 Laranote::attach($user)->deleteOld()->note('I want this to be the only note attached to this user.');
+```
+
+### Retrieving Notes
+To retrieve notes from a particular model, you can call the `notes()` relationship that the `NotesTrait` granted it.
+```
+$user->notes
+```
+
+To retrieve any notes that are regarding a particular model, you can call the `regardedBy()` relationship that the `NotesTrait` granted it.
+```
+$user->regardedBy
+```
+
+### Note Properties
+To return a note's content, call the `content` attribute
+```
+$note->content
+```
+
+To return the model the note is attached to, use the `noting` relationship
+```
+$note->noting
+```
+
+To return the model the note is regarding, use the `regarding` relationship
+```
+$note->regarding
 ```
 
 ## License

@@ -2,6 +2,8 @@
 
 namespace Gmory\Laranotes\Test;
 
+use Gmory\Laranotes\Exceptions\CannotDeleteOldWithoutFirstSettingAttachTo;
+use Gmory\Laranotes\Exceptions\NoteRequiresSomethingToAttachTo;
 use Gmory\Laranotes\Laranote;
 use Gmory\Laranotes\Models\Note;
 use Gmory\Laranotes\Test\Models\Post;
@@ -28,13 +30,6 @@ class LaranoteTest extends TestCase
         $this->laranote = new Laranote;
     }
 
-    /** @test */
-    public function can_create_a_note()
-    {
-        $note = $this->laranote->note('Test Note');
-        $this->assertEquals('Test Note', Note::all()->last()->content);
-    }
-
 	/** @test */
     public function can_be_attached_to_a_model()
     {
@@ -46,7 +41,7 @@ class LaranoteTest extends TestCase
     /** @test */
     public function can_regard_another_model()
     {
-        $note = $this->laranote->regarding($this->post)->note('Test Note');
+        $note = $this->laranote->attach($this->user)->regarding($this->post)->note('Test Note');
 
         $this->assertEquals($this->post->regardedBy()->first(), $note->fresh());
     }
@@ -63,6 +58,66 @@ class LaranoteTest extends TestCase
 
         $this->assertEquals(1, $this->user->notes()->count());
     }
+
+    /** @test */
+    public function requires_a_model_to_attach_to()
+    {
+        try {
+            $this->laranote->note('Test Note 1');
+        } catch (NoteRequiresSomethingToAttachTo $e) {
+            $this->assertEquals(0, $this->user->notes()->count());
+            return;
+        }
+        $this->fail('Note was created without a model to attach to');
+    }
+
+    /** @test */
+    public function requires_attach_to_prior_to_delete_old()
+    {
+        $this->laranote->attach($this->user)->note('Test Note 1');
+        $this->assertEquals(1, $this->user->notes()->count());
+
+        // Reset
+        $this->laranote = new Laranote;
+
+        try {
+            $this->laranote->deleteOld()->note('Test Note 2');
+        } catch (CannotDeleteOldWithoutFirstSettingAttachTo $e) {
+            $this->assertEquals(1, $this->user->notes()->count());
+            $this->assertEquals('Test Note 1', $this->user->notes()->first()->content);
+            return;
+        }
+        $this->fail('deleteOld was called without anything set as attachedTo yet');
+    }
+
+    /** @test */
+    public function can_ensure_a_note_is_unique_before_adding_it_to_a_model()
+    {
+        // Gets created
+        $noteOne = $this->laranote->attach($this->user)->note('Test Note 1', true);
+        $this->assertEquals(1, $this->user->notes()->count());
+
+        // Fails
+        $noteTwo = $this->laranote->attach($this->user)->note('Test Note 1', true); 
+        $this->assertEquals(1, $this->user->notes()->count());
+
+        // Gets created
+        $noteThree = $this->laranote->attach($this->user)->regarding($this->post)->note('Test Note 1', true); 
+        $this->assertEquals(2, $this->user->notes()->count());
+
+        // Fails
+        $noteFour = $this->laranote->attach($this->user)->regarding($this->post)->note('Test Note 1', true); 
+        $this->assertEquals(2, $this->user->notes()->count());
+
+        // Gets created
+        $noteFive = $this->laranote->attach($this->user)->regarding($this->post)->note('Test Note 2', true); 
+        $this->assertEquals(3, $this->user->notes()->count());
+
+        // Gets created
+        $noteFive = $this->laranote->attach($this->user)->regarding($this->post)->note('Test Note 2'); 
+        $this->assertEquals(4, $this->user->notes()->count());
+    }
+
     protected function seedModels()
     {
         User::create(['name' => 'John Doe', 'email' => 'johndoe@test.com', 'password' => 'qwerty']);
