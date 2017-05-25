@@ -41,17 +41,39 @@ class Laranote
     }
 
     /**
-     * Delete all past notes associated with the attached model.
-     *
+     * Delete all past notes associated with the specified models.
+     * 
      * @return $this
      */
-    public function deleteOld()
+    public function deleteOld($attachToModel = null, $regardingModel = null, $onlyThoseBelongingToBoth = false, $content = null)
     {
-        if (!$this->attachTo) {
-            throw new CannotDeleteOldWithoutFirstSettingAttachTo;
+        if($onlyThoseBelongingToBoth) {
+
+            if (!$attachToModel || !$regardingModel) {
+                throw new CannotDeleteOldWithoutFirstSettingAttachTo;
+            }
+
+            return $this->deleteQuery($attachToModel->notes()->where('regarding_id', $regardingModel->id), $content);
         }
 
-        $this->attachTo->notes()->delete();
+        if ($attachToModel) {
+            $this->deleteQuery($attachToModel->notes(), $content);
+        }
+
+        if ($regardingModel) {
+            $this->deleteQuery($regardingModel->regardedBy(), $content);
+        }
+
+        return $this;
+    }
+
+    private function deleteQuery($query, $content = null) {
+
+        if($content) {
+            $query->where('content', $content);
+        }
+
+        $query->delete();
 
         return $this;
     }
@@ -107,7 +129,7 @@ class Laranote
     {
         $note = $this->note;
 
-        // Word around since whereHas currently don't work for polyMorphics (https://github.com/laravel/framework/issues/5429)
+        // Work around since whereHas currently doesn't work for polyMorphics (https://github.com/laravel/framework/issues/5429)
         $existingNotes = Note::where('content', $note->content)->get()->filter(function ($value, $key) use ($note) {
 
             if ($value->noting->id != $note->noting->id) {
