@@ -2,7 +2,7 @@
 
 namespace Gmory\Laranotes\Test;
 
-use Gmory\Laranotes\Exceptions\CannotDeleteOldWithoutFirstSettingAttachTo;
+use Gmory\Laranotes\Exceptions\MustSpecifyBothAttachedAndRegardedModels;
 use Gmory\Laranotes\Exceptions\NoteRequiresSomethingToAttachTo;
 use Gmory\Laranotes\Laranote;
 use Gmory\Laranotes\Models\Note;
@@ -28,6 +28,18 @@ class LaranoteTest extends TestCase
         $this->post = Post::first();
         $this->user = User::first();
         $this->laranote = new Laranote;
+    }
+
+    /** @test */
+    public function requires_a_model_to_attach_to()
+    {
+        try {
+            $this->laranote->note('Test Note 1');
+        } catch (NoteRequiresSomethingToAttachTo $e) {
+            $this->assertEquals(0, $this->user->notes()->count());
+            return;
+        }
+        $this->fail('Note was created without a model to attach to');
     }
 
 	/** @test */
@@ -67,6 +79,7 @@ class LaranoteTest extends TestCase
 
         $this->assertEquals(0, $this->post->fresh()->regardedBy()->count());
     }
+
     /** @test */
     public function can_delete_all_prior_notes_on_a_regarded_model()
     {
@@ -119,35 +132,37 @@ class LaranoteTest extends TestCase
         $this->assertEquals(1, $this->user->fresh()->notes()->count());
         $this->assertEquals(3, $this->post->fresh()->regardedBy()->count());
     }
-    /** @test */
-    public function requires_a_model_to_attach_to()
-    {
-        try {
-            $this->laranote->note('Test Note 1');
-        } catch (NoteRequiresSomethingToAttachTo $e) {
-            $this->assertEquals(0, $this->user->notes()->count());
-            return;
-        }
-        $this->fail('Note was created without a model to attach to');
-    }
 
     /** @test */
-    public function requires_attach_to_prior_to_delete_old()
+    public function requires_both_attached_and_regarded_models_when_deleting_with_both_flagged()
     {
-        $this->laranote->attach($this->user)->note('Test Note 1');
+        $this->laranote->attach($this->user)->regarding($this->post)->note('Test Note 1');
         $this->assertEquals(1, $this->user->notes()->count());
+        $this->assertEquals(1, $this->post->regardedBy()->count());
 
         // Reset
         $this->laranote = new Laranote;
 
         try {
-            $this->laranote->deleteOld()->note('Test Note 2');
-        } catch (CannotDeleteOldWithoutFirstSettingAttachTo $e) {
+            $this->laranote->deleteOld($this->user, null, true);
+            $this->fail('deleteOld was invoked with the both tag flagged but is missing regarding model');
+        } catch (MustSpecifyBothAttachedAndRegardedModels $e) {
             $this->assertEquals(1, $this->user->notes()->count());
-            $this->assertEquals('Test Note 1', $this->user->notes()->first()->content);
-            return;
+            $this->assertEquals(1, $this->post->regardedBy()->count());
         }
-        $this->fail('deleteOld was called without anything set as attachedTo yet');
+        
+        // Reset
+        $this->laranote = new Laranote;
+
+        try {
+            $this->laranote->deleteOld(null, $this->post, true);
+            $this->fail('deleteOld was invoked with the both tag flagged but is missing attachedTo model');
+        } catch (MustSpecifyBothAttachedAndRegardedModels $e) {
+            $this->assertEquals(1, $this->user->notes()->count());
+            $this->assertEquals(1, $this->post->regardedBy()->count());
+        }
+        
+        return;
     }
 
     /** @test */

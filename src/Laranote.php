@@ -2,7 +2,7 @@
 
 namespace Gmory\Laranotes;
 
-use Gmory\Laranotes\Exceptions\CannotDeleteOldWithoutFirstSettingAttachTo;
+use Gmory\Laranotes\Exceptions\MustSpecifyBothAttachedAndRegardedModels;
 use Gmory\Laranotes\Exceptions\NoteRequiresSomethingToAttachTo;
 use Gmory\Laranotes\Models\Note;
 use Illuminate\Database\Eloquent\Model;
@@ -43,6 +43,13 @@ class Laranote
     /**
      * Delete all past notes associated with the specified models.
      * 
+     * @param \Illuminate\Database\Eloquent\Model $attachToModel
+     * @param \Illuminate\Database\Eloquent\Model $regardingModel
+     * @param boolean $onlyThoseBelongingToBoth
+     * @param string $content
+     *
+     * @throws Gmory\Laranotes\Exceptions\MustSpecifyBothAttachedAndRegardedModels
+     *
      * @return $this
      */
     public function deleteOld($attachToModel = null, $regardingModel = null, $onlyThoseBelongingToBoth = false, $content = null)
@@ -50,7 +57,7 @@ class Laranote
         if($onlyThoseBelongingToBoth) {
 
             if (!$attachToModel || !$regardingModel) {
-                throw new CannotDeleteOldWithoutFirstSettingAttachTo;
+                throw new MustSpecifyBothAttachedAndRegardedModels;
             }
 
             return $this->deleteQuery($attachToModel->notes()->where('regarding_id', $regardingModel->id), $content);
@@ -67,21 +74,11 @@ class Laranote
         return $this;
     }
 
-    private function deleteQuery($query, $content = null) {
-
-        if($content) {
-            $query->where('content', $content);
-        }
-
-        $query->delete();
-
-        return $this;
-    }
-
     /**
      * Create the note itself.
      *
      * @param string $content
+     * @param boolean $unique
      *
      * @return null|Gmory\Laranotes\Models\Note
      */
@@ -144,5 +141,23 @@ class Laranote
         });
         
         return ($existingNotes->count() > 0);
+    }
+
+    /**
+     * Check if an identical note has already been created.
+     *
+     * @param \Illuminate\Database\Eloquent\Relations\MorphMany $query
+     * @param string $content
+     *
+     * @return $this
+     */
+    private function deleteQuery($query, $content = null) {
+        if($content) {
+            $query->where('content', $content);
+        }
+
+        $query->delete();
+
+        return $this;
     }
 }
