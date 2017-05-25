@@ -168,6 +168,12 @@ class LaranoteTest extends TestCase
     /** @test */
     public function can_ensure_a_note_is_unique_before_adding_it_to_a_model()
     {
+        $anotherUser = User::create(['name' => 'Jane Smith', 'email' => 'janesmith@test.com', 'password' => 'qwerty']);
+        
+        // Gets created
+        $noteOne = $this->laranote->attach($anotherUser)->note('Test Note 1', true);
+        $this->assertEquals(1, $anotherUser->notes()->count());
+
         // Gets created
         $noteOne = $this->laranote->attach($this->user)->note('Test Note 1', true);
         $this->assertEquals(1, $this->user->notes()->count());
