@@ -1,6 +1,6 @@
 # LaraNotes
 [![Travis](https://img.shields.io/travis/GMory/laranotes.svg?style=flat-square)](https://travis-ci.org/GMory/laranotes)
-[![Codecov](https://img.shields.io/codecov/c/github/GMory/laranotes/1.1.0.svg?style=flat-square)](https://codecov.io/gh/GMory/laranotes/branch/1.1.0)
+[![Codecov](https://img.shields.io/codecov/c/github/GMory/laranotes.svg?style=flat-square)](https://codecov.io/gh/GMory/laranotes)
 
 A package for laravel that allows you to attach notes to any model of your choosing. This is particularly helpful when you want to add a snippet of information to any of your models.
 
@@ -54,9 +54,36 @@ You can make a note regard a secondary model with `regarding($model)`. This is u
 Laranote::attach($user)->regarding($post)->note($user->name . ' edited this post.');
 ```
 
-You can delete all old notes associated with a model when creating a new note with `deleteOld()`.
+### Deleting Notes
+You can delete all old notes associated with a model when creating a new note with `deleteOld([$attachedToModel], [$regardingModel], [$onlyThoseBelongingToBoth], [$content])`.
+
+You must include either an `$attachedToModel` or a `$regardingModel` for this function to delete any notes.
+
+You can further expand on the deleting capability by signifying that you only want to delete notes with both the `$attachedTo` model and the `$regardingModel`, and/or by specifying the exact `$content` of the notes you want to delete.
+
+Delete all notes attached to `$user`
 ```
-Laranote::attach($user)->deleteOld()->note('I want this to be the only note attached to this user.');
+Laranote::deleteOld($user);
+```
+
+Delete all notes regarding `$post`
+```
+Laranote::deleteOld(null, $post));
+```
+
+Delete all notes attached to `$user` and all notes regarding `$post`
+```
+Laranote::deleteOld($user, $post));
+```
+
+Delete only notes both attached to `$user` and regarding `$post`
+```
+Laranote::deleteOld($user, $post, true));
+```
+
+Delete only notes both attached to `$user` and regarding `$post` that have a content of 'User authored a new post'
+```
+Laranote::deleteOld($user, $post, true, 'User authored a new post'));
 ```
 
 ### Retrieving Notes
