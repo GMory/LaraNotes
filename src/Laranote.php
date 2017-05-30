@@ -144,7 +144,7 @@ class Laranote
     }
 
     /**
-     * Continue a query and rune delete at the end.
+     * Complete a started delete query.
      *
      * @param \Illuminate\Database\Eloquent\Relations\MorphMany $query
      * @param string $content
