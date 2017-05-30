@@ -144,7 +144,7 @@ class Laranote
     }
 
     /**
-     * Check if an identical note has already been created.
+     * Complete a started delete query.
      *
      * @param \Illuminate\Database\Eloquent\Relations\MorphMany $query
      * @param string $content
