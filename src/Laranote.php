@@ -129,7 +129,7 @@ class Laranote
         // Work around since whereHas currently doesn't work for polyMorphics (https://github.com/laravel/framework/issues/5429)
         $existingNotes = Note::where('content', $note->content)->get()->filter(function ($value, $key) use ($note) {
 
-            if ($value->noting->id != $note->noting->id) {
+            if ($value->noting && ($value->noting->id != $note->noting->id)) {
                 return false;
             }
 
